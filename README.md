@@ -1,9 +1,13 @@
 # combalt
+
 combine alternating binary files into one
 
 Usage: combalt input1 input2 [output]
+
 Output: input1_byte0 input2_byte0 input1_byte1 ... etc
+
 Default output is STDOUT if no file is specified.
+
 
 The MIT License (MIT)
 
