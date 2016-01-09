@@ -21,16 +21,21 @@ int main( int argc, char *argv[] ){
 					file2count = 0,
 					outputCount = 0,
 					moreData1 = 1,
-					moreData2 = 1;
+					moreData2 = 1,
+					stdOutFlag = 0;
 
 	// Get Files
 
 	if( argc == 4) {
 		printf("Input 1: %s\n\rInput 2: %s\n\rOutput: %s\n\r\n\r", argv[1], argv[2], argv[3]);
+	} else if (argc == 3){
+		//Output to STDOUT
+		stdOutFlag = 1;
 	} else {
 		printf("combalt: combine alternating bytes from binary files\n\r");
-		printf("Usage: ./combalt in1.bin in2.bin out.bin\n\r");
-		printf("Output: File1_Byte0 File2_Byte0 File1_Byte1 ...\n\r");
+		printf("Usage: ./combalt input1 input2 [output]\n\r");
+		printf("Output: input1_byte0 input2_byte0 input1_byte1 ...\n\r");
+		printf("Default output is STDOUT if no file is specified.\n\r");
 		exit(0);
 	}
 
@@ -40,7 +45,9 @@ int main( int argc, char *argv[] ){
 
 	inputFile1p = fopen(argv[1], "r");
 	inputFile2p = fopen(argv[2], "r");
-	outputFilep = fopen(argv[3], "w");
+	if (!stdOutFlag){
+		outputFilep = fopen(argv[3], "w");
+	}
 
 	// Error and exit if any files fail to open
 
@@ -54,7 +61,7 @@ int main( int argc, char *argv[] ){
 		exit(1);
 	}
 
-	if(outputFilep == NULL){
+	if(outputFilep == NULL && !stdOutFlag){
 		printf("Error: Cannot open %s\n\r", argv[3]);
 		exit(1);
 	}
@@ -78,18 +85,26 @@ int main( int argc, char *argv[] ){
 		}
 
 		//The moreData flags will count if 0,1 or 2 bytes are available to write when combined
-		outputCount += fwrite(&outputBytes, sizeof(char), moreData1+moreData2, outputFilep);
+		if(stdOutFlag){
+			fwrite(&outputBytes, sizeof(char), moreData1+moreData2, stdout);
+		} else {
+			outputCount += fwrite(&outputBytes, sizeof(char), moreData1+moreData2, outputFilep);
+		}
 
 	} while(moreData1 > 0 | moreData2 > 0);
 
-	printf("Read %d bytes from %s\n\r", file1count, argv[1]);
-	printf("Read %d bytes from %s\n\r", file2count, argv[2]);
-	printf("Wrote %d bytes to %s\n\r", outputCount, argv[3]);
+	if(!stdOutFlag){
+		printf("Read %d bytes from %s\n\r", file1count, argv[1]);
+		printf("Read %d bytes from %s\n\r", file2count, argv[2]);
+		printf("Wrote %d bytes to %s\n\r", outputCount, argv[3]);
+	}
 
 	//Close Files
 	fclose(inputFile1p);
 	fclose(inputFile2p);
-	fclose(outputFilep);
+	if(!stdOutFlag){
+		fclose(outputFilep);
+	}
 
 	return 0;
 }
